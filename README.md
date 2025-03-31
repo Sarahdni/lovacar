@@ -29,3 +29,29 @@ Système d'automatisation pour la recherche d'annonces automobiles sur AutoScout
 ## Utilisation
 
 En cours de développement.
+
+Prochaines étapes
+Automatisation de la récupération des emails
+Pour automatiser complètement le processus de récupération des emails AutoScout24 sans intervention manuelle, plusieurs options ont été identifiées:
+
+Solution locale temporaire:
+
+Mettre en place un script avec schedule qui vérifie périodiquement les nouveaux emails
+Conserver l'authentification OAuth2 actuelle (nécessite une authentification manuelle initiale)
+
+
+Solutions cloud (à implémenter ultérieurement):
+
+Cloud Functions + Cloud Scheduler: Déployer une fonction serverless déclenchée à intervalles réguliers
+Cloud Run + Cloud Scheduler: Alternative plus flexible pour les applications complexes
+App Engine + Cron Jobs: Plateforme complète d'hébergement avec planification intégrée
+
+
+
+Ces solutions cloud offriront:
+
+Une exécution fiable sans besoin de serveur local ou d'ordinateur allumé
+Une intégration native avec les APIs Google
+Une évolutivité pour les fonctionnalités futures
+
+TODO: Compléter l'automatisation locale avant d'implémenter la solution cloud.
