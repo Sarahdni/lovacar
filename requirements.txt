@@ -1,10 +1,20 @@
-requests
-beautifulsoup4
-pandas
-fake-useragent
-lxml
-selenium
-webdriver-manager
-python-dotenv
-pytest
-imaplib2
+# API Google
+google-api-python-client>=2.77.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=1.0.0
+
+# Base de données MongoDB
+pymongo>=4.3.3
+
+# Scraping et traitement
+beautifulsoup4>=4.11.1
+selenium>=4.1.0
+webdriver-manager>=3.8.5
+lxml>=4.9.2
+
+# Utils
+python-dotenv>=0.21.0
+requests>=2.28.1
+
+# Tests
+pytest>=7.3.1

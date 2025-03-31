@@ -1,11 +1,10 @@
 # price_engine/offer_calculator.py
 import os
-import sqlite3
 import logging
 from datetime import datetime
 
 from config.settings import (
-    DATABASE_PATH, MIN_DISCOUNT_PERCENTAGE, MAX_DISCOUNT_PERCENTAGE
+    MIN_DISCOUNT_PERCENTAGE, MAX_DISCOUNT_PERCENTAGE
 )
 from utils.helpers import logger
 
@@ -25,35 +24,6 @@ class OfferCalculator:
         """
         self.min_discount = min_discount
         self.max_discount = max_discount
-    
-    def get_unprocessed_listings(self, limit=50):
-        """
-        Récupère les annonces qui ont une valeur estimée mais pas d'offre calculée.
-        
-        Args:
-            limit (int): Nombre maximum d'annonces à récupérer
-            
-        Returns:
-            list: Liste d'annonces à traiter
-        """
-        conn = sqlite3.connect(DATABASE_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        cursor.execute(
-            """
-            SELECT * FROM listings 
-            WHERE estimated_value IS NOT NULL 
-            AND suggested_offer IS NULL
-            LIMIT ?
-            """,
-            (limit,)
-        )
-        
-        listings = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        
-        return listings
     
     def calculate_market_position(self, listing_price, estimated_value):
         """
@@ -151,116 +121,20 @@ class OfferCalculator:
             "market_position": market_position,
             "strategy": strategy
         }
-    
-    def update_listing_with_offer(self, listing_id, offer_details):
-        """
-        Met à jour l'annonce avec les détails de l'offre.
-        
-        Args:
-            listing_id (int): ID de l'annonce
-            offer_details (dict): Détails de l'offre calculée
-            
-        Returns:
-            bool: True si la mise à jour a réussi, False sinon
-        """
-        conn = sqlite3.connect(DATABASE_PATH)
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute(
-                """
-                UPDATE listings SET
-                suggested_offer = ?,
-                discount_percentage = ?,
-                updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-                """,
-                (
-                    offer_details["suggested_offer"],
-                    offer_details["discount_percentage"],
-                    listing_id
-                )
-            )
-            
-            conn.commit()
-            logger.info(f"Offre mise à jour pour l'annonce {listing_id}: {offer_details['suggested_offer']}€")
-            return True
-        
-        except Exception as e:
-            conn.rollback()
-            logger.error(f"Erreur lors de la mise à jour de l'offre pour l'annonce {listing_id}: {str(e)}")
-            return False
-        
-        finally:
-            conn.close()
-    
-    def process_all_unprocessed_listings(self):
-        """
-        Traite toutes les annonces qui n'ont pas encore d'offre calculée.
-        
-        Returns:
-            int: Nombre d'annonces traitées
-        """
-        listings = self.get_unprocessed_listings()
-        processed_count = 0
-        
-        for listing in listings:
-            listing_id = listing["id"]
-            listing_price = listing["price"]
-            estimated_value = listing["estimated_value"]
-            
-            offer_details = self.calculate_offer(listing_price, estimated_value)
-            
-            if offer_details["suggested_offer"] and self.update_listing_with_offer(listing_id, offer_details):
-                processed_count += 1
-        
-        logger.info(f"Offres calculées pour {processed_count} annonces")
-        return processed_count
-    
-    def get_best_deals(self, min_discount=10, limit=10):
-        """
-        Récupère les meilleures affaires selon le pourcentage de remise.
-        
-        Args:
-            min_discount (float): Pourcentage minimum de remise
-            limit (int): Nombre maximum d'annonces à récupérer
-            
-        Returns:
-            list: Liste des meilleures affaires
-        """
-        conn = sqlite3.connect(DATABASE_PATH)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        cursor.execute(
-            """
-            SELECT * FROM listings 
-            WHERE discount_percentage >= ? 
-            AND contacted = 0
-            ORDER BY discount_percentage DESC
-            LIMIT ?
-            """,
-            (min_discount, limit)
-        )
-        
-        deals = [dict(row) for row in cursor.fetchall()]
-        conn.close()
-        
-        return deals
 
-# Exemple d'utilisation
+# Exemple d'utilisation direct (pour les tests)
 if __name__ == "__main__":
     calculator = OfferCalculator()
-    processed_count = calculator.process_all_unprocessed_listings()
-    print(f"Offres calculées pour {processed_count} annonces")
     
-    # Afficher les meilleures affaires
-    best_deals = calculator.get_best_deals(min_discount=15)
-    print(f"\nMeilleures affaires ({len(best_deals)} trouvées) :")
+    # Exemple de calcul d'offre
+    listing_price = 15000
+    estimated_value = 13000
     
-    for i, deal in enumerate(best_deals):
-        print(f"\n{i+1}. {deal['make']} {deal['model']} ({deal['year']})")
-        print(f"   Prix affiché: {deal['price']}€")
-        print(f"   Valeur estimée: {deal['estimated_value']}€")
-        print(f"   Offre suggérée: {deal['suggested_offer']}€")
-        print(f"   Remise: {deal['discount_percentage']:.1f}%")
+    offer = calculator.calculate_offer(listing_price, estimated_value)
+    
+    print(f"Prix affiché: {listing_price}€")
+    print(f"Valeur estimée: {estimated_value}€")
+    print(f"Position sur le marché: {offer['market_position']['position_percentage']:.1f}%")
+    print(f"Stratégie: {offer['strategy']}")
+    print(f"Remise calculée: {offer['discount_percentage']:.1f}% ({offer['discount_amount']}€)")
+    print(f"Offre suggérée: {offer['suggested_offer']}€")

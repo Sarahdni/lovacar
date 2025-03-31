@@ -36,6 +36,10 @@ EMAIL_PASSWORD = os.getenv('EMAIL_PASSWORD')
 EMAIL_SERVER = os.getenv('EMAIL_SERVER', 'imap.gmail.com')
 EMAIL_FOLDER = os.getenv('EMAIL_FOLDER', 'INBOX')
 
+# Nouveaux paramètres OAuth2 pour Gmail
+GMAIL_CREDENTIALS_PATH = os.getenv('GMAIL_CREDENTIALS_PATH', 'credentials/gmail_credentials.json')
+GMAIL_TOKEN_PATH = os.getenv('GMAIL_TOKEN_PATH', 'credentials/gmail_token.json')
+
 # Paramètres de la base de données
 DATABASE_PATH = "database/car_listings.db"
 

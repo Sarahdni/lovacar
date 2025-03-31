@@ -75,3 +75,7 @@ exports/
 # Fichiers temporaires
 tmp/
 temp/
+
+
+# Fichiers de credentials OAuth2
+credentials/*.json
