@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime
 
 from utils.helpers import logger
-from scrapers.local_email_scraper import LocalEmailScraper
+from scrapers.email_scraper import AutoScoutEmailScraper
 from price_engine.value_estimator import AutoScoutValueEstimator
 from price_engine.offer_calculator import OfferCalculator
 from config.settings import DATABASE_PATH
@@ -21,7 +21,7 @@ def init_database():
     conn = sqlite3.connect(DATABASE_PATH)
     cursor = conn.cursor()
     
-    # Créer la table d'annonces avec toutes les colonnes nécessaires
+    # Créer la table d'annonces
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS listings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +29,6 @@ def init_database():
         make TEXT,
         model TEXT,
         price INTEGER,
-        price_text TEXT,
         mileage INTEGER,
         year INTEGER,
         url TEXT UNIQUE,
@@ -52,21 +51,21 @@ def init_database():
     
     logger.info(f"Base de données initialisée: {DATABASE_PATH}")
 
-def scrape_emails_local(max_emails=5, emails_dir="emails"):
+def scrape_emails(max_emails=5, unread_only=True):
     """
-    Analyse les fichiers .eml sauvegardés localement.
+    Scrape les emails d'alerte AutoScout24.
     
     Args:
         max_emails (int): Nombre maximum d'emails à traiter
-        emails_dir (str): Dossier contenant les fichiers .eml
+        unread_only (bool): Si True, ne traite que les emails non lus
         
     Returns:
         int: Nombre d'annonces extraites
     """
-    logger.info("Démarrage de l'analyse des emails locaux...")
-    scraper = LocalEmailScraper(emails_dir=emails_dir)
-    listings = scraper.process_emails(max_emails=max_emails)
-    logger.info(f"Analyse terminée, {len(listings)} annonces extraites")
+    logger.info("Démarrage du scraping des emails...")
+    scraper = AutoScoutEmailScraper()
+    listings = scraper.process_emails(max_emails=max_emails, unread_only=unread_only)
+    logger.info(f"Scraping terminé, {len(listings)} annonces extraites")
     return len(listings)
 
 def get_unestimated_listings(limit=10):
@@ -232,9 +231,8 @@ def main():
     parser = argparse.ArgumentParser(description="Lovacar - Automatisation des offres sur AutoScout24")
     parser.add_argument("--emails", type=int, default=5, help="Nombre maximum d'emails à traiter")
     parser.add_argument("--estimates", type=int, default=5, help="Nombre maximum d'annonces à estimer")
-    parser.add_argument("--email-dir", type=str, default="emails", help="Dossier contenant les fichiers .eml")
     parser.add_argument("--all", action="store_true", help="Exécuter tout le processus")
-    parser.add_argument("--scrape", action="store_true", help="Analyser les emails locaux")
+    parser.add_argument("--scrape", action="store_true", help="Scraper les emails")
     parser.add_argument("--estimate", action="store_true", help="Estimer les valeurs")
     parser.add_argument("--calculate", action="store_true", help="Calculer les offres")
     parser.add_argument("--deals", action="store_true", help="Afficher les meilleures affaires")
@@ -260,7 +258,7 @@ def main():
     
     # Exécuter les actions demandées
     if run_scrape:
-        scrape_emails_local(max_emails=args.emails, emails_dir=args.email_dir)
+        scrape_emails(max_emails=args.emails)
     
     if run_estimate:
         estimate_car_values(limit=args.estimates)
