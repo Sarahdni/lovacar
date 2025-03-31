@@ -68,7 +68,7 @@ class MongoDatabase:
         Returns:
             bool: True si l'initialisation a réussi, False sinon
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return False
         
@@ -100,7 +100,7 @@ class MongoDatabase:
         Returns:
             dict: Résultat de l'opération (nb_inserts, nb_updates)
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return {'nb_inserts': 0, 'nb_updates': 0}
         
@@ -168,7 +168,7 @@ class MongoDatabase:
         Returns:
             list: Liste des annonces sans estimation
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return []
         
@@ -195,7 +195,7 @@ class MongoDatabase:
         Returns:
             bool: True si la mise à jour a réussi, False sinon
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return False
         
@@ -226,7 +226,7 @@ class MongoDatabase:
         Returns:
             list: Liste d'annonces à traiter
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return []
         
@@ -256,7 +256,7 @@ class MongoDatabase:
         Returns:
             bool: True si la mise à jour a réussi, False sinon
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return False
         
@@ -289,7 +289,7 @@ class MongoDatabase:
         Returns:
             list: Liste des meilleures affaires
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return []
         
@@ -317,7 +317,7 @@ class MongoDatabase:
         Returns:
             bool: True si la mise à jour a réussi, False sinon
         """
-        if not self.db:
+        if self.db is None:
             if not self.connect():
                 return False
         

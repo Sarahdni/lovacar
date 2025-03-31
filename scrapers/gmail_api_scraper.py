@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+import base64
 
 from utils.helpers import logger, sanitize_text, extract_number_from_text
 
@@ -17,7 +18,7 @@ class GmailApiScraper:
     directement depuis les emails d'alerte AutoScout24.
     """
     
-    def __init__(self, credentials_file='credentials.json', token_file='token.pickle'):
+    def __init__(self, credentials_file='credentials/gmail_credentials.json', token_file='credentials/token.pickle'):
         """
         Initialise le scraper avec les fichiers d'authentification Google.
         
@@ -92,7 +93,7 @@ class GmailApiScraper:
         Returns:
             list: Liste des IDs d'emails récupérés
         """
-        if not self.service:
+        if self.service is None:
             if not self.authenticate():
                 logger.error("Impossible de s'authentifier avec l'API Gmail")
                 return []
@@ -133,7 +134,7 @@ class GmailApiScraper:
         Returns:
             dict: Contenu de l'email (sujet, date, corps HTML)
         """
-        if not self.service:
+        if self.service is None:
             if not self.authenticate():
                 logger.error("Impossible de s'authentifier avec l'API Gmail")
                 return None
@@ -164,7 +165,6 @@ class GmailApiScraper:
             
             if html_content:
                 # Décoder le contenu Base64
-                import base64
                 html_content = base64.urlsafe_b64decode(html_content.encode('ASCII')).decode('utf-8')
             
             return {
@@ -297,7 +297,7 @@ class GmailApiScraper:
         Returns:
             bool: True si le message a été marqué comme lu, False sinon
         """
-        if not self.service:
+        if self.service is None:
             if not self.authenticate():
                 logger.error("Impossible de s'authentifier avec l'API Gmail")
                 return False
